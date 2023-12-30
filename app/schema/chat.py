@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-
+from typing import List
 class Delta(BaseModel):
     content: str
 
@@ -14,4 +14,4 @@ class ChatRequest(BaseModel):
   question: str
 
 class ChatResponse(BaseModel):
-    choices: list[Choice]
+    choices: List[Choice]

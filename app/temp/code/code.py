@@ -1,72 +1,26 @@
-import random
-import curses
+import requests
+import pandas as pd
+import matplotlib.pyplot as plt
 
-# Initialize the screen
-stdscr = curses.initscr()
-curses.curs_set(0)
-sh, sw = stdscr.getmaxyx()
-w = curses.newwin(sh, sw, 0, 0)
-w.keypad(1)
-w.timeout(100)
+# API call to fetch the Apple stock price data
+url = "https://api.polygon.io/v2/aggs/ticker/AAPL/range/1/day/2020-01-09/2023-01-09?adjusted=true&sort=asc&limit=5000&apiKey={YOUR_POLYGON_API_KEY}"
+response = requests.get(url)
+data = response.json()
 
-# Create the snake initial position and body
-snake_x = sw // 4
-snake_y = sh // 2
-snake = [
-    [snake_y, snake_x],
-    [snake_y, snake_x - 1],
-    [snake_y, snake_x - 2]
-]
+# Extract the relevant data from the API response
+results = data['results']
+timestamps = [pd.Timestamp(result['t'], unit='ms') for result in results]
+close_prices = [result['c'] for result in results]
 
-# Create the food initial position
-food = [sh // 2, sw // 2]
-w.addch(food[0], food[1], curses.ACS_PI)
+# Create a DataFrame from the extracted data
+df = pd.DataFrame({'Date': timestamps, 'Close Price': close_prices})
+df.set_index('Date', inplace=True)
 
-# Define the initial direction
-key = curses.KEY_RIGHT
-
-# Start the game loop
-while True:
-    next_key = w.getch()
-    key = key if next_key == -1 else next_key
-
-    # Check if the snake has hit the wall or itself
-    if (
-        snake[0][0] in [0, sh] or
-        snake[0][1] in [0, sw] or
-        snake[0] in snake[1:]
-    ):
-        curses.endwin()
-        quit()
-
-    # Calculate the new head position
-    new_head = [snake[0][0], snake[0][1]]
-
-    if key == curses.KEY_DOWN:
-        new_head[0] += 1
-    if key == curses.KEY_UP:
-        new_head[0] -= 1
-    if key == curses.KEY_LEFT:
-        new_head[1] -= 1
-    if key == curses.KEY_RIGHT:
-        new_head[1] += 1
-
-    # Insert the new head position
-    snake.insert(0, new_head)
-
-    # Check if the snake has eaten the food
-    if snake[0] == food:
-        food = None
-        while food is None:
-            nf = [
-                random.randint(1, sh-1),
-                random.randint(1, sw-1)
-            ]
-            food = nf if nf not in snake else None
-        w.addch(food[0], food[1], curses.ACS_PI)
-    else:
-        tail = snake.pop()
-        w.addch(tail[0], tail[1], ' ')
-
-    # Draw the snake
-    w.addch(snake[0][0], snake[0][1], curses.ACS_CKBOARD)
+# Plot the stock chart
+plt.figure(figsize=(12, 6))
+plt.plot(df.index, df['Close Price'])
+plt.xlabel('Date')
+plt.ylabel('Closing Price')
+plt.title('Apple Stock Price Chart')
+plt.grid(True)
+plt.show()

@@ -27,6 +27,8 @@ class ChatService:
 
       if match and code_confirmation_flag:
         code_block = extract_code_block(generated_text, self.pattern)
+        print(code_block)
+        code_block += "\n plt.savefig('/root/test/finance-llm-server/app/temp/image/test1.png')"
         processed_code = code_block[0].replace("\\n", "\n")
         write_to_file(processed_code, self.code_path)
         code_confirmation_flag = False
