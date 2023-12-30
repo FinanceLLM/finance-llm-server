@@ -15,7 +15,7 @@ image_name = 'audejr456/test-ubuntu'
 container_name = 'my_container'
 
 volume_mapping = {
-    "/Users/inwest/Workspace/CodeInterpreter": {
+    "/root/test/finance-llm-server/app/temp": {
         "bind": "/app/data",
         "mode": "rw"
     }
